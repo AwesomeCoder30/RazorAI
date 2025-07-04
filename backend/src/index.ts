@@ -1,10 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import generateRoutes from './routes/generate';
 
-// Load environment variables
-dotenv.config();
+// Load environment variables with explicit path
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -49,10 +50,10 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 RazorAI Server running on http://localhost:${PORT}`);
-  console.log(`📖 Health check: http://localhost:${PORT}/health`);
-  console.log(`🤖 AI Generation: http://localhost:${PORT}/api/generate/test`);
-  console.log(`🔑 Hugging Face API: ${process.env.HUGGING_FACE_API_KEY ? 'Configured' : 'Not configured'}`);
+  console.log(`RazorAI Server running on http://localhost:${PORT}`);
+  console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log(`AI Generation: http://localhost:${PORT}/api/generate/test`);
+  console.log(`Hugging Face API: ${process.env.HUGGING_FACE_API_KEY ? 'Configured' : 'Not configured'}`);
 });
 
 export default app; 

@@ -38,10 +38,6 @@ class HuggingFaceService {
   private hf: HfInference;
 
   constructor() {
-    console.log('Initializing Hugging Face service...');
-    console.log('API Key present:', !!process.env.HUGGING_FACE_API_KEY);
-    console.log('API Key length:', process.env.HUGGING_FACE_API_KEY?.length || 0);
-    
     this.hf = new HfInference(process.env.HUGGING_FACE_API_KEY || '');
   }
 
@@ -52,14 +48,12 @@ class HuggingFaceService {
 
   async generateWireframe(request: WireframeGenerationRequest): Promise<WireframeGenerationResponse> {
     try {
-      console.log('Generating wireframe with request:', request);
-      
       if (!this.hasApiKey()) {
         console.log('No API key found, using mock wireframe');
         return this.getMockWireframe(request);
       }
 
-      console.log('Using real Hugging Face API...');
+      console.log('Using Hugging Face API for wireframe generation');
       
       // Create a prompt for wireframe generation
       const prompt = this.createWireframePrompt(request);
@@ -115,8 +109,6 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
 
   private parseWireframeResponse(generatedText: string, request: WireframeGenerationRequest): any {
     try {
-      console.log('Parsing generated text:', generatedText.substring(0, 200) + '...');
-      
       // Try to extract JSON from the generated text
       const jsonMatch = generatedText.match(/WIREFRAME_JSON:\s*({.*})/s);
       if (jsonMatch) {
@@ -135,7 +127,6 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
     }
 
     // Fallback to mock wireframe if parsing fails
-    console.log('Falling back to mock wireframe due to parsing error');
     return this.getMockWireframe(request).wireframe;
   }
 
@@ -222,9 +213,6 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
 
   async getAvailableModels(): Promise<{ models: string[]; status: string }> {
     try {
-      console.log('Checking available models...');
-      console.log('Has API key:', this.hasApiKey());
-      
       if (!this.hasApiKey()) {
         return {
           models: ['Mock Model (No API Key)'],
