@@ -1,4 +1,5 @@
 import { HfInference } from '@huggingface/inference';
+import WireframeParser from './wireframeParser';
 
 export interface WireframeGenerationRequest {
   description: string;
@@ -9,7 +10,14 @@ export interface WireframeGenerationRequest {
 
 export interface WireframeComponent {
   id: string;
-  type: 'header' | 'navigation' | 'hero' | 'button' | 'text' | 'image' | 'form' | 'input' | 'card' | 'footer' | 'sidebar' | 'section';
+  type: 'header' | 'navbar' | 'sidebar' | 'breadcrumb' | 'tabs' | 'pagination' |
+        'hero' | 'text' | 'heading' | 'paragraph' | 'image' | 'video' | 'carousel' | 'gallery' |
+        'form' | 'input' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'button' | 'search' |
+        'table' | 'chart' | 'card' | 'list' | 'grid' | 'stats' | 'progress' | 'badge' |
+        'modal' | 'alert' | 'tooltip' | 'notification' | 'loading' | 'empty-state' |
+        'container' | 'section' | 'divider' | 'spacer' | 'footer' | 'columns' |
+        'product-card' | 'shopping-cart' | 'checkout' | 'price' | 'rating' | 'filter' |
+        'widget' | 'metric' | 'timeline' | 'calendar' | 'profile' | 'settings' | 'navigation';
   x: number;
   y: number;
   width: number;
@@ -36,9 +44,11 @@ export interface WireframeGenerationResponse {
 
 class HuggingFaceService {
   private hf: HfInference;
+  private wireframeParser: WireframeParser;
 
   constructor() {
     this.hf = new HfInference(process.env.HUGGING_FACE_API_KEY || '');
+    this.wireframeParser = new WireframeParser();
   }
 
   private hasApiKey(): boolean {
@@ -131,68 +141,18 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
   }
 
   private getMockWireframe(request: WireframeGenerationRequest): WireframeGenerationResponse {
+    // Use the dynamic parser to generate wireframe from description
+    const parsedWireframe = this.wireframeParser.parseWireframe(request.description);
+
     const dimensions = this.getDeviceDimensions(request.device || 'desktop');
-    
-    const mockComponents: WireframeComponent[] = [
-      {
-        id: 'header_1',
-        type: 'header',
-        x: 0,
-        y: 0,
-        width: dimensions.width,
-        height: 80,
-        content: 'Website Header',
-        style: { backgroundColor: '#f5f5f5' },
-      },
-      {
-        id: 'nav_1',
-        type: 'navigation',
-        x: 0,
-        y: 80,
-        width: dimensions.width,
-        height: 60,
-        content: 'Navigation Menu',
-        style: { backgroundColor: '#e0e0e0' },
-      },
-      {
-        id: 'hero_1',
-        type: 'hero',
-        x: 0,
-        y: 140,
-        width: dimensions.width,
-        height: 300,
-        content: request.description,
-        style: { backgroundColor: '#ffffff', border: '1px solid #ccc' },
-      },
-      {
-        id: 'button_1',
-        type: 'button',
-        x: dimensions.width / 2 - 75,
-        y: 350,
-        width: 150,
-        height: 40,
-        content: 'Get Started',
-        style: { backgroundColor: '#007bff', color: 'white' },
-      },
-      {
-        id: 'footer_1',
-        type: 'footer',
-        x: 0,
-        y: dimensions.height - 80,
-        width: dimensions.width,
-        height: 80,
-        content: 'Footer Content',
-        style: { backgroundColor: '#f5f5f5' },
-      },
-    ];
 
     return {
       success: true,
       wireframe: {
         id: `wireframe_${Date.now()}`,
-        title: `${request.pageType || 'Custom'} Wireframe`,
-        description: request.description,
-        components: mockComponents,
+        title: parsedWireframe.title,
+        description: parsedWireframe.description,
+        components: parsedWireframe.components,
         device: request.device || 'desktop',
         dimensions,
       },

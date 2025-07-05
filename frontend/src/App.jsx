@@ -6,19 +6,58 @@ export default function App() {
   const [wireframe, setWireframe] = useState(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
+  const [isHoveringSearch, setIsHoveringSearch] = useState(false)
   const pageRef = useRef(null)
+
+  // Intelligent page type detection
+  const detectPageType = (description) => {
+    const text = description.toLowerCase()
+    
+    // Dashboard keywords
+    if (text.includes('dashboard') || text.includes('admin') || text.includes('analytics') || 
+        text.includes('charts') || text.includes('data') || text.includes('metrics') ||
+        text.includes('management') || text.includes('control panel')) {
+      return 'dashboard'
+    }
+    
+    // E-commerce keywords
+    if (text.includes('shop') || text.includes('store') || text.includes('ecommerce') || 
+        text.includes('e-commerce') || text.includes('products') || text.includes('cart') ||
+        text.includes('buy') || text.includes('sell') || text.includes('retail')) {
+      return 'ecommerce'
+    }
+    
+    // Blog keywords
+    if (text.includes('blog') || text.includes('article') || text.includes('content') || 
+        text.includes('news') || text.includes('post') || text.includes('writing') ||
+        text.includes('story') || text.includes('journal')) {
+      return 'blog'
+    }
+    
+    // Form keywords
+    if (text.includes('form') || text.includes('signup') || text.includes('register') || 
+        text.includes('contact') || text.includes('survey') || text.includes('application')) {
+      return 'form'
+    }
+    
+    // Default to landing page
+    return 'landing'
+  }
 
   const handleGenerate = async () => {
     if (!description.trim()) return
     
     setIsGenerating(true)
     try {
+      const pageType = detectPageType(description.trim())
+      console.log('Detected page type:', pageType, 'for description:', description.trim())
+      
       const response = await fetch('/api/generate/wireframe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           description: description.trim(),
-          pageType: 'landing',
+          pageType: pageType,
           device: 'desktop',
           complexity: 'medium',
         }),
@@ -217,6 +256,23 @@ export default function App() {
       )
     ]),
 
+    // Mouse position indicator (hidden when hovering over search)
+    !isHoveringSearch && React.createElement('div', {
+      key: 'mouse-indicator',
+      style: {
+        position: 'fixed',
+        left: mousePosition.x - 2,
+        top: mousePosition.y - 2,
+        width: '4px',
+        height: '4px',
+        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        borderRadius: '50%',
+        pointerEvents: 'none',
+        zIndex: 100,
+        transition: 'all 0.1s ease-out'
+      }
+    }),
+
     // Grid info display
     React.createElement('div', {
       key: 'grid-info',
@@ -276,7 +332,7 @@ export default function App() {
             margin: '0 0 48px 0',
             fontWeight: '400'
           }
-        }, 'Generate wireframes with AI, everywhere.')
+        }, 'Generate wireframes with AI')
       ]),
       
       // Main content area
@@ -301,55 +357,110 @@ export default function App() {
             marginBottom: '32px'
           }
         }, [
+                  React.createElement('div', {
+          key: 'search-container',
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            transition: 'all 0.2s ease',
+            ':hover': {
+              borderColor: '#d1d5db'
+            }
+          },
+          onMouseEnter: (e) => {
+            e.currentTarget.style.borderColor = '#d1d5db'
+            setIsHoveringSearch(true)
+          },
+          onMouseLeave: (e) => {
+            e.currentTarget.style.borderColor = '#e5e7eb'
+            setIsHoveringSearch(false)
+          }
+        }, [
+          // Search icon
           React.createElement('div', {
-            key: 'input-wrapper',
-            style: { display: 'flex', gap: '16px', alignItems: 'flex-end' }
-          }, [
-            React.createElement('div', {
-              key: 'textarea-wrapper',
-              style: { flex: 1 }
-            }, [
-              React.createElement('textarea', {
-                key: 'textarea',
-                value: description,
-                onChange: (e) => setDescription(e.target.value),
-                placeholder: "Describe your wireframe...",
-                style: {
-                  width: '100%',
-                  padding: '16px',
-                  fontSize: '16px',
-                  border: '1px solid #D1D5DB',
-                  borderRadius: '12px',
-                  resize: 'vertical',
-                  minHeight: '120px',
-                  boxSizing: 'border-box',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  lineHeight: '1.5',
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                }
-              })
-            ]),
-            
-            React.createElement('button', {
-              key: 'button',
-              onClick: handleGenerate,
-              disabled: !description.trim() || isGenerating,
-              style: {
-                padding: '16px 32px',
-                fontSize: '16px',
-                fontWeight: '600',
-                backgroundColor: '#111827',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                cursor: !description.trim() || isGenerating ? 'not-allowed' : 'pointer',
-                opacity: !description.trim() || isGenerating ? 0.6 : 1,
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
+            key: 'search-icon',
+            style: {
+              width: '20px',
+              height: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#9ca3af'
+            }
+          }, React.createElement('svg', {
+            width: '20',
+            height: '20',
+            viewBox: '0 0 20 20',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            fillRule: 'evenodd',
+            d: 'M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z',
+            clipRule: 'evenodd'
+          }))),
+          
+          // Search input
+          React.createElement('input', {
+            key: 'search-input',
+            type: 'text',
+            value: description,
+            onChange: (e) => setDescription(e.target.value),
+            placeholder: "Search for projects...",
+            style: {
+              flex: 1,
+              border: 'none',
+              outline: 'none',
+              fontSize: '16px',
+              color: '#374151',
+              backgroundColor: 'transparent',
+              fontFamily: 'inherit',
+              '::placeholder': {
+                color: '#9ca3af'
               }
-            }, isGenerating ? 'Generating...' : 'Generate')
-          ])
+            },
+            onKeyDown: (e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleGenerate()
+              }
+            }
+          }),
+          
+          // Search button
+          React.createElement('button', {
+            key: 'search-button',
+            onClick: handleGenerate,
+            disabled: !description.trim() || isGenerating,
+            style: {
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: '600',
+              backgroundColor: '#6b7280',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: !description.trim() || isGenerating ? 'not-allowed' : 'pointer',
+              opacity: !description.trim() || isGenerating ? 0.6 : 1,
+              transition: 'all 0.2s ease',
+              whiteSpace: 'nowrap'
+            },
+            onMouseEnter: (e) => {
+              if (!(!description.trim() || isGenerating)) {
+                e.currentTarget.style.backgroundColor = '#4b5563'
+              }
+            },
+            onMouseLeave: (e) => {
+              if (!(!description.trim() || isGenerating)) {
+                e.currentTarget.style.backgroundColor = '#6b7280'
+              }
+            }
+          }, isGenerating ? 'Generating...' : 'Search')
+        ])
         ]),
         
         // Wireframe display
@@ -381,8 +492,9 @@ export default function App() {
               border: '2px solid rgba(59, 130, 246, 0.5)',
               borderRadius: '12px',
               padding: '24px',
-              minHeight: '400px',
-              position: 'relative'
+              minHeight: '600px',
+              position: 'relative',
+              overflow: 'hidden'
             }
           }, [
             React.createElement('h3', {
@@ -393,79 +505,391 @@ export default function App() {
                 margin: '0 0 16px 0',
                 color: '#1F2937'
               }
-            }, wireframe.layout || 'Layout'),
+            }, wireframe.title || 'Wireframe'),
             
+            // Professional wireframe canvas
             React.createElement('div', {
-              key: 'components-grid',
+              key: 'wireframe-canvas',
               style: {
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '16px',
-                marginBottom: '24px'
-              }
-            }, wireframe.components && wireframe.components.map((component, index) => 
-              React.createElement('div', {
-                key: `component-${index}`,
-                style: {
-                  backgroundColor: 'rgba(249, 250, 251, 0.8)',
-                  border: '1px solid rgba(209, 213, 219, 0.6)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  cursor: 'move',
-                  transition: 'all 0.2s ease'
-                }
-              }, [
-                React.createElement('h4', {
-                  key: `component-title-${index}`,
-                  style: { 
-                    fontSize: '16px', 
-                    fontWeight: '600',
-                    margin: '0 0 8px 0',
-                    color: '#374151'
-                  }
-                }, component.type || 'Component'),
-                
-                React.createElement('p', {
-                  key: `component-desc-${index}`,
-                  style: { 
-                    fontSize: '14px', 
-                    color: '#6B7280',
-                    margin: '0',
-                    lineHeight: '1.4'
-                  }
-                }, component.description || 'No description available')
-              ])
-            )),
-            
-            wireframe.notes && React.createElement('div', {
-              key: 'notes-section',
-              style: {
-                backgroundColor: 'rgba(254, 243, 199, 0.8)',
-                border: '1px solid rgba(251, 191, 36, 0.3)',
+                position: 'relative',
+                width: '100%',
+                height: '500px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e7eb',
                 borderRadius: '8px',
-                padding: '16px'
+                overflow: 'hidden'
               }
-            }, [
-              React.createElement('h4', {
-                key: 'notes-title',
-                style: { 
-                  fontSize: '16px', 
-                  fontWeight: '600',
-                  margin: '0 0 8px 0',
-                  color: '#92400e'
+            }, wireframe.components && wireframe.components.map((component, index) => {
+              const renderComponent = () => {
+                const baseStyle = {
+                  position: 'absolute',
+                  left: `${component.x}%`,
+                  top: `${component.y}%`,
+                  width: `${component.width}%`,
+                  height: `${component.height}%`,
+                  cursor: 'move',
+                  transition: 'all 0.2s ease',
+                  boxSizing: 'border-box',
+                  ...(component.style || {})
                 }
-              }, 'Notes'),
-              
-              React.createElement('p', {
-                key: 'notes-content',
-                style: { 
-                  fontSize: '14px', 
-                  color: '#92400e',
-                  margin: '0',
-                  lineHeight: '1.4'
+
+                // Component-specific styling
+                switch (component.type) {
+                  case 'header':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: component.style?.backgroundColor || '#ffffff',
+                        borderBottom: '1px solid #e5e7eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0 2rem',
+                        fontWeight: '600',
+                        fontSize: '14px'
+                      }
+                    }, component.content || 'Header')
+
+                  case 'navbar':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#374151',
+                        padding: '0 1rem'
+                      }
+                    }, component.content || 'Navigation')
+
+                  case 'hero':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: component.style?.backgroundColor || '#f8fafc',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        padding: '2rem'
+                      }
+                    }, React.createElement('div', {
+                      style: {
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        color: '#1f2937',
+                        marginBottom: '0.5rem'
+                      }
+                    }, component.content || 'Hero Section'))
+
+                  case 'heading':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        fontSize: component.style?.fontSize || '24px',
+                        fontWeight: '700',
+                        color: '#1f2937',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center'
+                      }
+                    }, component.content || 'Heading')
+
+                  case 'paragraph':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        color: '#6b7280',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        padding: '1rem'
+                      }
+                    }, component.content || 'Paragraph text')
+
+                  case 'button':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: component.style?.backgroundColor || '#3b82f6',
+                        color: component.style?.color || 'white',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: '600',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        border: component.style?.border || 'none'
+                      }
+                    }, component.content || 'Button')
+
+                  case 'card':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                      }
+                    }, React.createElement('div', {
+                      style: {
+                        fontSize: '14px',
+                        fontWeight: '600',
+                        color: '#1f2937'
+                      }
+                    }, component.content || 'Card'))
+
+                  case 'sidebar':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#1f2937',
+                        color: 'white',
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '0.5rem'
+                      }
+                    }, 
+                      React.createElement('div', { style: { fontWeight: '600', fontSize: '12px' } }, 'Sidebar'),
+                      React.createElement('div', { style: { fontSize: '10px', opacity: '0.8' } }, 'Menu items')
+                    )
+
+                  case 'stats':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center'
+                      }
+                    }, 
+                      React.createElement('div', {
+                        style: {
+                          fontSize: '16px',
+                          fontWeight: '700',
+                          color: '#1f2937',
+                          marginBottom: '0.25rem'
+                        }
+                      }, component.content || 'Stat'),
+                      React.createElement('div', {
+                        style: {
+                          fontSize: '10px',
+                          color: '#6b7280'
+                        }
+                      }, 'Metric')
+                    )
+
+                  case 'chart':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }
+                    }, 
+                      React.createElement('div', {
+                        style: {
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(45deg, #f3f4f6 25%, transparent 25%), linear-gradient(-45deg, #f3f4f6 25%, transparent 25%)',
+                          backgroundSize: '10px 10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          color: '#6b7280'
+                        }
+                      }, component.content || 'Chart')
+                    )
+
+                  case 'table':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }
+                    }, 
+                      React.createElement('div', {
+                        style: {
+                          padding: '0.75rem',
+                          backgroundColor: '#f9fafb',
+                          borderBottom: '1px solid #e5e7eb',
+                          fontSize: '12px',
+                          fontWeight: '600'
+                        }
+                      }, component.content || 'Table'),
+                      React.createElement('div', {
+                        style: {
+                          padding: '0.75rem',
+                          fontSize: '10px',
+                          color: '#6b7280'
+                        }
+                      }, 'Table data')
+                    )
+
+                  case 'footer':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#1f2937',
+                        color: 'white',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px'
+                      }
+                    }, component.content || 'Footer')
+
+                  case 'section':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: component.style?.backgroundColor || '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        color: '#6b7280'
+                      }
+                    }, component.content || 'Section')
+
+                  case 'search':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '6px',
+                        padding: '0.75rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '12px',
+                        color: '#6b7280'
+                      }
+                    }, component.content || 'Search...')
+
+                  case 'filter':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#f9fafb',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '0.5rem',
+                        fontSize: '12px',
+                        color: '#374151'
+                      }
+                    }, 
+                      React.createElement('div', { style: { fontWeight: '600' } }, 'Filters'),
+                      React.createElement('div', { style: { fontSize: '10px', opacity: '0.8' } }, 'Category, Price, etc.')
+                    )
+
+                  case 'grid':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#ffffff',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        padding: '1rem',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(3, 1fr)',
+                        gap: '0.5rem',
+                        fontSize: '10px',
+                        color: '#6b7280'
+                      }
+                    }, 
+                      ...Array(6).fill(0).map((_, i) => 
+                        React.createElement('div', {
+                          key: i,
+                          style: {
+                            backgroundColor: '#f3f4f6',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            textAlign: 'center'
+                          }
+                        }, `Item ${i + 1}`)
+                      )
+                    )
+
+                  case 'shopping-cart':
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '6px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }
+                    }, component.content || 'Cart (0)')
+
+                  default:
+                    return React.createElement('div', {
+                      style: {
+                        ...baseStyle,
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        color: '#495057'
+                      }
+                    }, component.content || component.type)
                 }
-              }, wireframe.notes)
-            ])
+              }
+
+              return renderComponent()
+            }))
           ])
         ])
       ])
