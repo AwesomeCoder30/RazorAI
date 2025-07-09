@@ -4,6 +4,7 @@ export default function App() {
   const [description, setDescription] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [wireframe, setWireframe] = useState(null)
+  const [error, setError] = useState('')
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
   const [isHoveringUI, setIsHoveringUI] = useState(false)
@@ -44,9 +45,35 @@ export default function App() {
     return 'landing'
   }
 
-  const handleGenerate = async () => {
-    if (!description.trim()) return
+  const validateSearch = (searchText) => {
+    if (!searchText) return 'Search description cannot be empty'
+    const trimmed = searchText.trim()
     
+    if (!trimmed) {
+      return 'Search description cannot be empty'
+    }
+    
+    if (trimmed.length < 3) {
+      return 'Search description must be at least 3 characters long'
+    }
+    
+    // Check for meaningful content (not just numbers or special characters)
+    const hasLetters = /[a-zA-Z]/.test(trimmed)
+    if (!hasLetters) {
+      return 'Search description must contain meaningful text'
+    }
+    
+    return null
+  }
+
+  const handleGenerate = async () => {
+    const validationError = validateSearch(description)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    
+    setError('')
     setIsGenerating(true)
     try {
       const pageType = detectPageType(description.trim())
@@ -67,9 +94,12 @@ export default function App() {
       console.log('Generated wireframe:', result)
       if (result.success) {
         setWireframe(result.data)
+      } else {
+        setError('Failed to generate wireframe. Please try again.')
       }
     } catch (error) {
       console.error('Error:', error)
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setIsGenerating(false)
     }
@@ -417,7 +447,10 @@ export default function App() {
             key: 'search-input',
             type: 'text',
             value: description,
-            onChange: (e) => setDescription(e.target.value),
+            onChange: (e) => {
+              setDescription(e.target.value)
+              if (error) setError('') // Clear error when user types
+            },
             placeholder: "Search for projects...",
             style: {
               flex: 1,
@@ -443,7 +476,7 @@ export default function App() {
           React.createElement('button', {
             key: 'search-button',
             onClick: handleGenerate,
-            disabled: !description.trim() || isGenerating,
+            disabled: !description.trim() || isGenerating || validateSearch(description),
             style: {
               padding: '8px 16px',
               fontSize: '14px',
@@ -452,23 +485,54 @@ export default function App() {
               color: 'white',
               border: 'none',
               borderRadius: '8px',
-              cursor: !description.trim() || isGenerating ? 'not-allowed' : 'pointer',
-              opacity: !description.trim() || isGenerating ? 0.6 : 1,
+              cursor: !description.trim() || isGenerating || validateSearch(description) ? 'not-allowed' : 'pointer',
+              opacity: !description.trim() || isGenerating || validateSearch(description) ? 0.6 : 1,
               transition: 'all 0.2s ease',
               whiteSpace: 'nowrap'
             },
             onMouseEnter: (e) => {
-              if (!(!description.trim() || isGenerating)) {
+              if (!(!description.trim() || isGenerating || validateSearch(description))) {
                 e.currentTarget.style.backgroundColor = '#4b5563'
               }
             },
             onMouseLeave: (e) => {
-              if (!(!description.trim() || isGenerating)) {
+              if (!(!description.trim() || isGenerating || validateSearch(description))) {
                 e.currentTarget.style.backgroundColor = '#6b7280'
               }
             }
-          }, isGenerating ? 'Generating...' : 'Search')
-        ])
+                      }, isGenerating ? 'Generating...' : 'Search')
+          ])
+        ]),
+        
+        // Error message display
+        error && React.createElement('div', {
+          key: 'error-message',
+          style: {
+            marginTop: '12px',
+            padding: '8px 12px',
+            backgroundColor: '#fef2f2',
+            borderLeft: '4px solid #ef4444',
+            borderRadius: '4px',
+            fontSize: '14px',
+            color: '#dc2626',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }
+        }, [
+          React.createElement('svg', {
+            key: 'error-icon',
+            width: '16',
+            height: '16',
+            viewBox: '0 0 20 20',
+            fill: 'currentColor',
+            style: { flexShrink: 0 }
+          }, React.createElement('path', {
+            fillRule: 'evenodd',
+            d: 'M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z',
+            clipRule: 'evenodd'
+          })),
+          React.createElement('span', { key: 'error-text' }, error)
         ]),
         
         // Wireframe display
