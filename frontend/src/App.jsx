@@ -6,7 +6,7 @@ export default function App() {
   const [wireframe, setWireframe] = useState(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
-  const [isHoveringSearch, setIsHoveringSearch] = useState(false)
+  const [isHoveringUI, setIsHoveringUI] = useState(false)
   const pageRef = useRef(null)
 
   // Intelligent page type detection
@@ -256,8 +256,8 @@ export default function App() {
       )
     ]),
 
-    // Mouse position indicator (hidden when hovering over search)
-    !isHoveringSearch && React.createElement('div', {
+    // Mouse position indicator (hidden when hovering over UI)
+    !isHoveringUI && React.createElement('div', {
       key: 'mouse-indicator',
       style: {
         position: 'fixed',
@@ -289,7 +289,9 @@ export default function App() {
         fontFamily: 'Monaco, monospace',
         border: '1px solid rgba(229, 231, 235, 0.8)',
         zIndex: 50
-      }
+      },
+      onMouseEnter: () => setIsHoveringUI(true),
+      onMouseLeave: () => setIsHoveringUI(false)
     }, [
       React.createElement('div', { key: 'grid-stats' }, `Grid: ${dots.length} dots, ${lines.length} lines`),
       React.createElement('div', { key: 'mouse-pos' }, `Mouse: ${mousePosition.x.toFixed(0)}, ${mousePosition.y.toFixed(0)}`)
@@ -311,7 +313,9 @@ export default function App() {
           margin: '0 auto',
           padding: '64px 24px 32px',
           textAlign: 'center'
-        }
+        },
+        onMouseEnter: () => setIsHoveringUI(true),
+        onMouseLeave: () => setIsHoveringUI(false)
       }, [
         React.createElement('h1', { 
           key: 'title',
@@ -342,7 +346,9 @@ export default function App() {
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0 24px 64px'
-        }
+        },
+        onMouseEnter: () => setIsHoveringUI(true),
+        onMouseLeave: () => setIsHoveringUI(false)
       }, [
         // Input section
         React.createElement('div', { 
@@ -355,7 +361,9 @@ export default function App() {
             border: '1px solid rgba(229, 231, 235, 0.8)',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
             marginBottom: '32px'
-          }
+          },
+          onMouseEnter: () => setIsHoveringUI(true),
+          onMouseLeave: () => setIsHoveringUI(false)
         }, [
                   React.createElement('div', {
           key: 'search-container',
@@ -375,11 +383,11 @@ export default function App() {
           },
           onMouseEnter: (e) => {
             e.currentTarget.style.borderColor = '#d1d5db'
-            setIsHoveringSearch(true)
+            setIsHoveringUI(true)
           },
           onMouseLeave: (e) => {
             e.currentTarget.style.borderColor = '#e5e7eb'
-            setIsHoveringSearch(false)
+            setIsHoveringUI(false)
           }
         }, [
           // Search icon
@@ -473,7 +481,9 @@ export default function App() {
             borderRadius: '16px', 
             border: '1px solid rgba(229, 231, 235, 0.8)',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-          }
+          },
+          onMouseEnter: () => setIsHoveringUI(true),
+          onMouseLeave: () => setIsHoveringUI(false)
         }, [
           React.createElement('h2', {
             key: 'wireframe-title',
