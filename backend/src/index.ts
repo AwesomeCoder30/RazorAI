@@ -7,6 +7,12 @@ import generateRoutes from './routes/generate';
 // Load environment variables with explicit path
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+// Debug: Log environment variables
+console.log('Environment variables loaded:');
+console.log('GROQ_API_KEY:', process.env.GROQ_API_KEY ? 'Set' : 'Not set');
+console.log('HUGGING_FACE_API_KEY:', process.env.HUGGING_FACE_API_KEY ? 'Set' : 'Not set');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 

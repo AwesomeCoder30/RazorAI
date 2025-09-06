@@ -31,6 +31,31 @@ router.get('/status', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/generate/providers
+// Get the status of all LLM providers
+router.get('/providers', async (req: Request, res: Response) => {
+  try {
+    const { LLMService } = await import('../services/llmService');
+    const llmService = new LLMService();
+    const providers = llmService.getProviderStatus();
+    
+    res.json({
+      success: true,
+      data: {
+        providers,
+        timestamp: new Date().toISOString(),
+      },
+      message: 'LLM providers status retrieved successfully',
+    });
+  } catch (error) {
+    console.error('Error getting LLM providers status:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get LLM providers status',
+    });
+  }
+});
+
 // POST /api/generate/wireframe
 // Generate a wireframe from a description
 router.post('/wireframe', async (req: Request, res: Response) => {

@@ -1,5 +1,7 @@
 import { HfInference } from '@huggingface/inference';
 import WireframeParser from './wireframeParser';
+import LLMService from './llmService';
+import { WireframeSchema } from '../schemas/wireframeSchema';
 
 export interface WireframeGenerationRequest {
   description: string;
@@ -45,10 +47,12 @@ export interface WireframeGenerationResponse {
 class HuggingFaceService {
   private hf: HfInference;
   private wireframeParser: WireframeParser;
+  private llmService: LLMService;
 
   constructor() {
     this.hf = new HfInference(process.env.HUGGING_FACE_API_KEY || '');
     this.wireframeParser = new WireframeParser();
+    this.llmService = new LLMService();
   }
 
   private hasApiKey(): boolean {
@@ -58,43 +62,72 @@ class HuggingFaceService {
 
   async generateWireframe(request: WireframeGenerationRequest): Promise<WireframeGenerationResponse> {
     try {
-      if (!this.hasApiKey()) {
-        console.log('No API key found, using mock wireframe');
-        return this.getMockWireframe(request);
-      }
-
-      console.log('Using Hugging Face API for wireframe generation');
+      console.log('Generating wireframe with enhanced LLM system...');
+      console.log('Request:', JSON.stringify(request, null, 2));
       
-      // Create a prompt for wireframe generation
-      const prompt = this.createWireframePrompt(request);
-      
-      // Use a text generation model (we'll use Llama or similar)
-      const result = await this.hf.textGeneration({
-        model: 'meta-llama/Llama-2-7b-chat-hf',
-        inputs: prompt,
-        parameters: {
-          max_new_tokens: 500,
-          temperature: 0.7,
-          repetition_penalty: 1.2,
-        },
+      // Try the new LLM service first
+      const llmResponse = await this.llmService.generateWireframe({
+        description: request.description,
+        pageType: request.pageType,
+        device: request.device,
+        complexity: request.complexity,
+        theme: 'modern',
+        useFewShot: true // Use few-shot learning for better results
       });
 
-      console.log('Hugging Face API response received');
+      console.log('LLM Response:', JSON.stringify(llmResponse, null, 2));
 
-      // Parse the generated text into wireframe components
-      const wireframe = this.parseWireframeResponse(result.generated_text, request);
+      if (llmResponse.success && llmResponse.data) {
+        console.log(`Successfully generated wireframe using ${llmResponse.provider}`);
+        
+        // Convert the new schema format to the legacy format for compatibility
+        const legacyWireframe = this.convertToLegacyFormat(llmResponse.data, request);
+        
+        return {
+          success: true,
+          wireframe: legacyWireframe,
+        };
+      }
 
-      return {
-        success: true,
-        wireframe,
-      };
+      console.log('LLM service failed, reason:', llmResponse.error);
+
+      // Fallback to original Hugging Face API if LLM service fails
+      if (this.hasApiKey()) {
+        console.log('LLM service failed, trying original Hugging Face API...');
+        return await this.generateWithHuggingFace(request);
+      }
+
+      // Final fallback to mock wireframe
+      console.log('All services failed, using enhanced mock wireframe');
+      return this.getEnhancedMockWireframe(request);
+      
     } catch (error) {
       console.error('Error generating wireframe:', error);
       
-      // If API fails, fallback to mock wireframe
+      // If everything fails, fallback to mock wireframe
       console.log('Falling back to mock wireframe due to error');
-      return this.getMockWireframe(request);
+      return this.getEnhancedMockWireframe(request);
     }
+  }
+
+  private async generateWithHuggingFace(request: WireframeGenerationRequest): Promise<WireframeGenerationResponse> {
+    const prompt = this.createWireframePrompt(request);
+    
+    const result = await this.hf.textGeneration({
+      model: 'meta-llama/Llama-2-7b-chat-hf',
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: 1000,
+        temperature: 0.7,
+        repetition_penalty: 1.2,
+      },
+    });
+
+    const wireframe = this.parseWireframeResponse(result.generated_text, request);
+    return {
+      success: true,
+      wireframe,
+    };
   }
 
   private createWireframePrompt(request: WireframeGenerationRequest): string {
@@ -140,7 +173,29 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
     return this.getMockWireframe(request).wireframe;
   }
 
-  private getMockWireframe(request: WireframeGenerationRequest): WireframeGenerationResponse {
+  private convertToLegacyFormat(schema: WireframeSchema, request: WireframeGenerationRequest): any {
+    const dimensions = this.getDeviceDimensions(request.device || 'desktop');
+    
+    return {
+      id: `wireframe_${Date.now()}`,
+      title: schema.metadata.title,
+      description: schema.metadata.description,
+      components: schema.components.map(comp => ({
+        id: comp.id,
+        type: comp.type,
+        x: comp.position.x,
+        y: comp.position.y,
+        width: comp.position.width,
+        height: comp.position.height,
+        content: comp.content.text || comp.content.placeholder || comp.type,
+        style: comp.styling
+      })),
+      device: request.device || 'desktop',
+      dimensions,
+    };
+  }
+
+  private getEnhancedMockWireframe(request: WireframeGenerationRequest): WireframeGenerationResponse {
     // Use the dynamic parser to generate wireframe from description
     const parsedWireframe = this.wireframeParser.parseWireframe(request.description);
 
@@ -157,6 +212,10 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
         dimensions,
       },
     };
+  }
+
+  private getMockWireframe(request: WireframeGenerationRequest): WireframeGenerationResponse {
+    return this.getEnhancedMockWireframe(request);
   }
 
   private getDeviceDimensions(device: string): { width: number; height: number } {

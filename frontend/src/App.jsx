@@ -451,7 +451,7 @@ export default function App() {
               setDescription(e.target.value)
               if (error) setError('') // Clear error when user types
             },
-            placeholder: "Search for projects...",
+            placeholder: "Wireframe Description...",
             style: {
               flex: 1,
               border: 'none',
