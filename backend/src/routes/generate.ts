@@ -2,7 +2,15 @@ import { Router, Request, Response } from 'express';
 import HuggingFaceService, { WireframeGenerationRequest } from '../services/huggingface';
 
 const router = Router();
-const hfService = new HuggingFaceService();
+
+// Lazy-load the HuggingFaceService to ensure environment variables are loaded first
+let hfService: HuggingFaceService | null = null;
+function getHfService(): HuggingFaceService {
+  if (!hfService) {
+    hfService = new HuggingFaceService();
+  }
+  return hfService;
+}
 
 // GET /api/generate/status
 // Get the current status of the AI service
@@ -56,6 +64,216 @@ router.get('/providers', async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/generate/test-llm
+// Test the LLM service directly
+router.get('/test-llm', async (req: Request, res: Response) => {
+  try {
+    const { LLMService } = await import('../services/llmService');
+    const llmService = new LLMService();
+    
+    const result = await llmService.generateWireframe({
+      description: 'Test simple page',
+      pageType: 'landing',
+      device: 'desktop',
+      complexity: 'simple',
+      theme: 'modern',
+      useFewShot: true
+    });
+    
+    res.json({
+      success: true,
+      data: result,
+      message: 'LLM service test completed',
+    });
+  } catch (error) {
+    console.error('Error testing LLM service:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test LLM service',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/generate/test-hf
+// Test the HuggingFaceService directly
+router.get('/test-hf', async (req: Request, res: Response) => {
+  try {
+    const result = await getHfService().generateWireframe({
+      description: 'Test simple page',
+      pageType: 'landing',
+      device: 'desktop',
+      complexity: 'simple'
+    });
+    
+    res.json({
+      success: true,
+      data: result,
+      message: 'HuggingFaceService test completed',
+    });
+  } catch (error) {
+    console.error('Error testing HuggingFaceService:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test HuggingFaceService',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/generate/debug-integration
+// Debug the LLM integration step by step
+router.get('/debug-integration', async (req: Request, res: Response) => {
+  try {
+    const { LLMService } = await import('../services/llmService');
+    const llmService = new LLMService();
+    
+    // Test LLM service directly
+    const llmResult = await llmService.generateWireframe({
+      description: 'Test simple page',
+      pageType: 'landing',
+      device: 'desktop',
+      complexity: 'simple',
+      theme: 'modern',
+      useFewShot: true
+    });
+    
+    // Test HuggingFaceService
+    const hfResult = await getHfService().generateWireframe({
+      description: 'Test simple page',
+      pageType: 'landing',
+      device: 'desktop',
+      complexity: 'simple'
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        llmDirect: {
+          success: llmResult.success,
+          provider: llmResult.provider,
+          hasData: !!llmResult.data,
+          title: llmResult.data?.metadata?.title,
+          componentCount: llmResult.data?.components?.length
+        },
+        hfService: {
+          success: hfResult.success,
+          title: hfResult.wireframe?.title,
+          componentCount: hfResult.wireframe?.components?.length,
+          usingMock: hfResult.wireframe?.title?.includes('Custom Standard')
+        }
+      },
+      message: 'Integration debug completed',
+    });
+  } catch (error) {
+    console.error('Error in debug integration:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to debug integration',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/generate/test-conversion
+// Test the conversion logic specifically
+router.get('/test-conversion', async (req: Request, res: Response) => {
+  try {
+    const { LLMService } = await import('../services/llmService');
+    const llmService = new LLMService();
+    
+    // Get LLM response
+    const llmResult = await llmService.generateWireframe({
+      description: 'Test simple page',
+      pageType: 'landing',
+      device: 'desktop',
+      complexity: 'simple',
+      theme: 'modern',
+      useFewShot: true
+    });
+    
+    if (llmResult.success && llmResult.data) {
+      // Test conversion manually
+      try {
+        const dimensions = { width: 1200, height: 800 };
+        const legacyWireframe = {
+          id: `wireframe_${Date.now()}`,
+          title: llmResult.data.metadata.title,
+          description: llmResult.data.metadata.description,
+          components: llmResult.data.components.map((comp: any) => ({
+            id: comp.id,
+            type: comp.type,
+            x: comp.position.x,
+            y: comp.position.y,
+            width: comp.position.width,
+            height: comp.position.height,
+            content: comp.content.text || comp.content.placeholder || comp.type,
+            style: comp.styling
+          })),
+          device: 'desktop',
+          dimensions,
+        };
+        
+        res.json({
+          success: true,
+          data: {
+            llmData: llmResult.data,
+            convertedWireframe: legacyWireframe,
+            conversionWorked: true
+          },
+          message: 'Conversion test completed',
+        });
+      } catch (conversionError) {
+        res.json({
+          success: false,
+          data: {
+            llmData: llmResult.data,
+            conversionError: conversionError instanceof Error ? conversionError.message : 'Unknown error',
+            conversionWorked: false
+          },
+          message: 'Conversion test failed',
+        });
+      }
+    } else {
+      res.json({
+        success: false,
+        error: 'LLM service failed',
+        details: llmResult.error
+      });
+    }
+  } catch (error) {
+    console.error('Error in conversion test:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test conversion',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/generate/test-hf-llm
+// Test if the HuggingFaceService's LLM service instance works
+router.get('/test-hf-llm', async (req: Request, res: Response) => {
+  try {
+    // Access the private llmService instance through a test method
+    // We'll add a test method to HuggingFaceService for this
+    const testResult = await (getHfService() as any).testLLMService();
+    
+    res.json({
+      success: true,
+      data: testResult,
+      message: 'HuggingFaceService LLM test completed',
+    });
+  } catch (error) {
+    console.error('Error testing HuggingFaceService LLM:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to test HuggingFaceService LLM',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // POST /api/generate/wireframe
 // Generate a wireframe from a description
 router.post('/wireframe', async (req: Request, res: Response) => {
@@ -86,7 +304,7 @@ router.post('/wireframe', async (req: Request, res: Response) => {
 
     console.log('Generating wireframe for:', request);
 
-    const result = await hfService.generateWireframe(request);
+    const result = await getHfService().generateWireframe(request);
 
     if (result.success) {
       res.json({
@@ -113,7 +331,7 @@ router.post('/wireframe', async (req: Request, res: Response) => {
 // Get available AI models
 router.get('/models', async (req: Request, res: Response) => {
   try {
-    const models = await hfService.getAvailableModels();
+    const models = await getHfService().getAvailableModels();
     res.json({
       success: true,
       data: models,
@@ -139,7 +357,7 @@ router.get('/test', async (req: Request, res: Response) => {
       complexity: 'simple',
     };
 
-    const result = await hfService.generateWireframe(testRequest);
+    const result = await getHfService().generateWireframe(testRequest);
 
     res.json({
       success: true,

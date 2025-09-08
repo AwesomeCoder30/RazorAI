@@ -62,9 +62,6 @@ class HuggingFaceService {
 
   async generateWireframe(request: WireframeGenerationRequest): Promise<WireframeGenerationResponse> {
     try {
-      console.log('Generating wireframe with enhanced LLM system...');
-      console.log('Request:', JSON.stringify(request, null, 2));
-      
       // Try the new LLM service first
       const llmResponse = await this.llmService.generateWireframe({
         description: request.description,
@@ -75,37 +72,33 @@ class HuggingFaceService {
         useFewShot: true // Use few-shot learning for better results
       });
 
-      console.log('LLM Response:', JSON.stringify(llmResponse, null, 2));
-
       if (llmResponse.success && llmResponse.data) {
-        console.log(`Successfully generated wireframe using ${llmResponse.provider}`);
-        
-        // Convert the new schema format to the legacy format for compatibility
-        const legacyWireframe = this.convertToLegacyFormat(llmResponse.data, request);
-        
-        return {
-          success: true,
-          wireframe: legacyWireframe,
-        };
+        try {
+          // Convert the new schema format to the legacy format for compatibility
+          const legacyWireframe = this.convertToLegacyFormat(llmResponse.data, request);
+          
+          return {
+            success: true,
+            wireframe: legacyWireframe,
+          };
+        } catch (conversionError) {
+          console.error('Error converting LLM response to legacy format:', conversionError);
+          // Fall through to fallback
+        }
       }
-
-      console.log('LLM service failed, reason:', llmResponse.error);
 
       // Fallback to original Hugging Face API if LLM service fails
       if (this.hasApiKey()) {
-        console.log('LLM service failed, trying original Hugging Face API...');
         return await this.generateWithHuggingFace(request);
       }
 
       // Final fallback to mock wireframe
-      console.log('All services failed, using enhanced mock wireframe');
       return this.getEnhancedMockWireframe(request);
       
     } catch (error) {
       console.error('Error generating wireframe:', error);
       
       // If everything fails, fallback to mock wireframe
-      console.log('Falling back to mock wireframe due to error');
       return this.getEnhancedMockWireframe(request);
     }
   }
@@ -252,6 +245,45 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
       return {
         models: ['Error fetching models'],
         status: 'error',
+      };
+    }
+  }
+
+  // Test method to check if the LLM service instance works
+  async testLLMService(): Promise<any> {
+    try {
+      if (!this.llmService) {
+        return {
+          success: false,
+          error: 'LLM service instance not found'
+        };
+      }
+
+      // Check provider status
+      const providers = this.llmService.getProviderStatus();
+
+      const result = await this.llmService.generateWireframe({
+        description: 'Test simple page',
+        pageType: 'landing',
+        device: 'desktop',
+        complexity: 'simple',
+        theme: 'modern',
+        useFewShot: true
+      });
+
+      return {
+        success: result.success,
+        provider: result.provider,
+        hasData: !!result.data,
+        title: result.data?.metadata?.title,
+        error: result.error,
+        providers: providers
+      };
+    } catch (error) {
+      console.error('Error in testLLMService:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }

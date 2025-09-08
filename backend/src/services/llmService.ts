@@ -74,21 +74,16 @@ export class LLMService {
     
     for (const provider of providersToTry) {
       try {
-        console.log(`Trying ${provider.name} for wireframe generation...`);
-        
         const response = await this.callLLMProvider(provider, request);
         
         if (response.success && response.data) {
           const processingTime = Date.now() - startTime;
-          console.log(`Successfully generated wireframe using ${provider.name} in ${processingTime}ms`);
           
           return {
             ...response,
             provider: provider.name,
             processingTime
           };
-        } else {
-          console.log(`${provider.name} failed: ${response.error || 'Unknown error'}`);
         }
       } catch (error) {
         console.error(`Error with ${provider.name}:`, error);
