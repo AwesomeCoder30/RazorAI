@@ -249,44 +249,6 @@ Start your response with "WIREFRAME_JSON:" followed by the JSON structure.`;
     }
   }
 
-  // Test method to check if the LLM service instance works
-  async testLLMService(): Promise<any> {
-    try {
-      if (!this.llmService) {
-        return {
-          success: false,
-          error: 'LLM service instance not found'
-        };
-      }
-
-      // Check provider status
-      const providers = this.llmService.getProviderStatus();
-
-      const result = await this.llmService.generateWireframe({
-        description: 'Test simple page',
-        pageType: 'landing',
-        device: 'desktop',
-        complexity: 'simple',
-        theme: 'modern',
-        useFewShot: true
-      });
-
-      return {
-        success: result.success,
-        provider: result.provider,
-        hasData: !!result.data,
-        title: result.data?.metadata?.title,
-        error: result.error,
-        providers: providers
-      };
-    } catch (error) {
-      console.error('Error in testLLMService:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
 }
 
 export default HuggingFaceService; 
