@@ -308,7 +308,7 @@ export default function App() {
       key: 'grid-info',
       style: {
         position: 'fixed',
-        bottom: '16px',
+        top: '16px',
         right: '16px',
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         backdropFilter: 'blur(8px)',
@@ -544,7 +544,8 @@ export default function App() {
             padding: '32px', 
             borderRadius: '16px', 
             border: '1px solid rgba(229, 231, 235, 0.8)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            marginBottom: '120px' // Add space for bottom palette
           },
           onMouseEnter: () => setIsHoveringUI(true),
           onMouseLeave: () => setIsHoveringUI(false)
@@ -964,6 +965,311 @@ export default function App() {
 
               return renderComponent()
             }))
+          ])
+        ])
+      ]),
+
+      // Floating Dark Toolbar Box (Professional Design Tool Style)
+      React.createElement('div', {
+        key: 'bottom-palette',
+        style: {
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#2D2D2D',
+          border: '1px solid #404040',
+          borderRadius: '16px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+          zIndex: 1000,
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '6px',
+          minWidth: '600px',
+          backdropFilter: 'blur(20px)'
+        },
+        onMouseEnter: () => setIsHoveringUI(true),
+        onMouseLeave: () => setIsHoveringUI(false)
+      }, [
+        // Left Section - Wireframe Tools
+        React.createElement('div', {
+          key: 'tools-section',
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2px'
+          }
+        }, [
+          // Select Tool (Selected)
+          React.createElement('div', {
+            key: 'select-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: '#3B82F6',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#2563EB'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = '#3B82F6'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'white'
+          }, React.createElement('path', {
+            d: 'M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3zm13.5 2.5L19 6l-1.5-1.5L16 6l1.5 1.5z'
+          }))),
+
+          // Header Component (Distinct icon)
+          React.createElement('div', {
+            key: 'header-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: 'transparent',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              transition: 'all 0.2s ease',
+              color: '#E5E7EB'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#404040'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            d: 'M3 3h18v4H3V3zm0 6h18v2H3V9zm0 4h18v2H3v-2zm0 4h18v2H3v-2z'
+          }))),
+
+          // Button Component (Distinct icon)
+          React.createElement('div', {
+            key: 'button-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: 'transparent',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              transition: 'all 0.2s ease',
+              color: '#E5E7EB'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#404040'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            d: 'M3 9h18v6H3V9zm2 2v2h14v-2H5z'
+          }))),
+
+          // Text Component (T icon)
+          React.createElement('div', {
+            key: 'text-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: 'transparent',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              transition: 'all 0.2s ease',
+              color: '#E5E7EB'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#404040'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            d: 'M5 4v3h5.5v12h3V7H19V4H5z'
+          }))),
+
+          // Image Component (Mountain landscape)
+          React.createElement('div', {
+            key: 'image-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: 'transparent',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              transition: 'all 0.2s ease',
+              color: '#E5E7EB'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#404040'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            d: 'M14 6l-3.75 5 2.85 3.8-1.6 1.2C9.81 13.75 7 10 7 10l-6 8h22l-9-12z'
+          }))),
+
+          // Card Component (Square with content)
+          React.createElement('div', {
+            key: 'card-tool',
+            style: {
+              width: '36px',
+              height: '36px',
+              backgroundColor: 'transparent',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'grab',
+              transition: 'all 0.2s ease',
+              color: '#E5E7EB'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#404040'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }
+          }, React.createElement('svg', {
+            width: '16',
+            height: '16',
+            viewBox: '0 0 24 24',
+            fill: 'currentColor'
+          }, React.createElement('path', {
+            d: 'M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h10v2H7v-2zm0 4h6v2H7v-2z'
+          })))
+        ]),
+
+        // Divider
+        React.createElement('div', {
+          key: 'toolbar-divider',
+          style: {
+            width: '1px',
+            height: '36px',
+            backgroundColor: '#404040',
+            margin: '0 12px'
+          }
+        }),
+
+        // Right Section - Simple Actions
+        React.createElement('div', {
+          key: 'actions-section',
+          style: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }
+        }, [
+          // Clear Canvas Button
+          React.createElement('div', {
+            key: 'clear-canvas',
+            style: {
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 12px',
+              backgroundColor: '#DC2626',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              color: 'white',
+              fontSize: '12px',
+              fontWeight: '500'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#B91C1C'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = '#DC2626'
+            }
+          }, [
+            React.createElement('svg', {
+              key: 'clear-icon',
+              width: '14',
+              height: '14',
+              viewBox: '0 0 24 24',
+              fill: 'currentColor'
+            }, React.createElement('path', {
+              d: 'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'
+            })),
+            React.createElement('span', { key: 'clear-text' }, 'Clear')
+          ]),
+
+          // Save Wireframe Button
+          React.createElement('div', {
+            key: 'save-wireframe',
+            style: {
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 12px',
+              backgroundColor: '#2563EB',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              color: 'white',
+              fontSize: '12px',
+              fontWeight: '500'
+            },
+            onMouseEnter: (e) => {
+              e.currentTarget.style.backgroundColor = '#1D4ED8'
+            },
+            onMouseLeave: (e) => {
+              e.currentTarget.style.backgroundColor = '#2563EB'
+            }
+          }, [
+            React.createElement('svg', {
+              key: 'save-icon',
+              width: '14',
+              height: '14',
+              viewBox: '0 0 24 24',
+              fill: 'currentColor'
+            }, React.createElement('path', {
+              d: 'M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z'
+            })),
+            React.createElement('span', { key: 'save-text' }, 'Save')
           ])
         ])
       ])
