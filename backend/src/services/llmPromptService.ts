@@ -12,34 +12,54 @@ export class LLMPromptService {
   
   // System prompt that defines the AI's role and capabilities
   private getSystemPrompt(): string {
-    return `You are an expert UX/UI designer and wireframe specialist. Your task is to generate detailed, professional wireframes based on user descriptions.
+    return `You are an expert UX/UI designer and wireframe specialist. Your task is to generate clean, black and white wireframes that are broad and conceptual, focusing on layout and structure rather than visual details.
 
 CORE CAPABILITIES:
-- Create modern, user-friendly wireframe layouts
-- Understand different page types (landing, dashboard, ecommerce, blog, form, app)
+- Create clean, black and white wireframe layouts
+- Understand different page types (landing, dashboard, ecommerce, blog, form, app) and their specific requirements
 - Generate responsive designs for desktop, tablet, and mobile
-- Apply appropriate spacing, typography, and visual hierarchy
-- Consider accessibility and usability best practices
+- Focus on layout structure, information hierarchy, and user flow
+- Use simple geometric shapes and placeholder content
+- Apply consistent spacing and alignment principles
 
 DESIGN PRINCIPLES:
-- Use modern design patterns and current UI trends
-- Ensure proper visual hierarchy with clear content organization
+- Keep wireframes in black, white, and grayscale only
+- Use simple geometric shapes (rectangles, circles, lines) for placeholders
+- Focus on layout structure and information hierarchy
+- Use placeholder text like "Logo", "Image", "Content", "Button"
 - Apply consistent spacing and alignment
-- Consider user flow and interaction patterns
-- Make designs accessible and inclusive
+- Keep designs broad and conceptual, not detailed
+- Use simple borders and basic shapes
+- Avoid colors, gradients, shadows, or visual effects
 
-OUTPUT FORMAT:
-You must respond with a valid JSON object that follows the exact schema provided. The JSON should be complete, valid, and ready for parsing.
+WIREFRAME STYLING:
+- Use only black (#000000), white (#ffffff), and grays (#f0f0f0, #d0d0d0, #a0a0a0)
+- Use simple rectangular shapes for content areas
+- Apply basic borders (1px solid #000000 or #d0d0d0)
+- Use simple typography without fancy styling
+- Keep spacing consistent and clean
+- Use basic geometric shapes for icons and images
+- Avoid complex styling or visual effects
 
 COMPONENT GUIDELINES:
-- Headers: Include navigation, branding, and key actions
-- Hero sections: Make them compelling with clear value propositions
-- Forms: Include proper labels, validation states, and clear CTAs
-- Cards: Use consistent sizing and proper content hierarchy
-- Navigation: Make it intuitive and accessible
-- Content: Organize with proper headings and readable text blocks
+- Headers: Simple navigation bars with basic text and simple icons
+- Content areas: Rectangular placeholders with descriptive labels
+- Images: Gray rectangular placeholders with "Image" or "Logo" labels
+- Buttons: Simple rectangular shapes with basic text
+- Forms: Basic input fields with simple labels
+- Cards: Simple rectangular containers with basic content
+- Navigation: Simple menu items and basic icons
+- Content: Use placeholder text like "Lorem ipsum" or descriptive labels
 
-Remember: Generate wireframes that look professional and modern, not basic or placeholder-like.`;
+CONTENT APPROACH:
+- Use simple, descriptive placeholder text
+- Label components clearly (e.g., "Logo", "Navigation", "Content", "Image")
+- Keep text minimal and functional
+- Use basic geometric shapes for visual elements
+- Focus on layout structure over content details
+- Make wireframes broad and conceptual
+
+Remember: Generate clean, black and white wireframes that focus on layout structure and user flow. Keep them broad, conceptual, and functional rather than detailed or visually complex.`;
   }
 
   // Generate the main prompt for wireframe generation
@@ -54,7 +74,7 @@ Remember: Generate wireframes that look professional and modern, not basic or pl
     const { description, pageType = 'other', device = 'desktop', complexity = 'medium', theme = 'modern' } = request;
     
     // Enhanced user prompt with examples and context
-    const userPrompt = `Generate a professional wireframe for the following requirements:
+    const userPrompt = `Generate a clean, black and white wireframe for the following requirements:
 
 DESCRIPTION: "${description}"
 
@@ -63,13 +83,29 @@ DEVICE: ${device}
 COMPLEXITY: ${complexity}
 THEME: ${theme}
 
-REQUIREMENTS:
-1. Create a modern, professional wireframe that matches the description
-2. Use appropriate components for the page type
-3. Ensure proper visual hierarchy and spacing
-4. Make it responsive and accessible
-5. Include realistic content, not placeholder text
-6. Apply modern design patterns
+WIREFRAME REQUIREMENTS:
+1. Create a clean, black and white wireframe that matches the description
+2. Use simple geometric shapes and placeholder content
+3. Focus on layout structure and information hierarchy
+4. Keep designs broad and conceptual, not detailed
+5. Use only black, white, and grayscale colors
+6. Apply consistent spacing and alignment
+7. Use simple borders and basic shapes
+8. Label components clearly with descriptive text
+9. Avoid colors, gradients, shadows, or visual effects
+10. Focus on user flow and layout structure
+11. Use placeholder text like "Logo", "Image", "Content", "Button"
+12. Keep wireframes functional and structural
+13. Use simple rectangular shapes for content areas
+14. Apply basic typography without fancy styling
+15. Make wireframes broad and conceptual
+
+DESIGN FOCUS:
+- Create clean, black and white wireframes
+- Focus on layout structure and user flow
+- Use simple geometric shapes and placeholders
+- Keep designs broad and conceptual
+- Avoid detailed styling or visual complexity
 
 IMPORTANT: You must respond with a JSON object that follows this EXACT structure:
 {
@@ -107,21 +143,35 @@ IMPORTANT: You must respond with a JSON object that follows this EXACT structure
         "link": "string"
       },
       "styling": {
-        "backgroundColor": "string",
-        "textColor": "string",
-        "borderColor": "string",
-        "borderRadius": 0-20,
-        "padding": "string",
-        "margin": "string",
-        "fontSize": "string",
-        "fontWeight": "normal|medium|semibold|bold",
+        "backgroundColor": "string (use only #ffffff, #f0f0f0, #d0d0d0, #a0a0a0, #000000)",
+        "textColor": "string (use only #000000, #666666, #999999)",
+        "borderColor": "string (use only #000000, #d0d0d0, #a0a0a0)",
+        "borderRadius": "0-8 (use 0, 2px, 4px, 8px for simple shapes)",
+        "padding": "string (use simple values: 0.5rem, 1rem, 1.5rem, 2rem)",
+        "margin": "string (use simple spacing: 0.5rem, 1rem, 1.5rem, 2rem)",
+        "fontSize": "string (use basic sizes: 0.875rem, 1rem, 1.125rem, 1.25rem, 1.5rem)",
+        "fontWeight": "normal|bold",
         "textAlign": "left|center|right",
         "display": "block|flex|grid|inline-block",
         "flexDirection": "row|column",
-        "justifyContent": "flex-start|center|flex-end|space-between|space-around",
+        "justifyContent": "flex-start|center|flex-end|space-between",
         "alignItems": "flex-start|center|flex-end|stretch",
-        "boxShadow": "string",
-        "opacity": 0-1
+        "boxShadow": "none (avoid shadows in wireframes)",
+        "opacity": "1 (keep full opacity)",
+        "border": "string (use simple borders: 1px solid #000000, 1px solid #d0d0d0)",
+        "borderWidth": "string (0, 1px, 2px)",
+        "borderStyle": "solid|dashed|dotted|none",
+        "width": "string (use percentages or simple values)",
+        "height": "string (use auto or simple values)",
+        "minHeight": "string (use simple values)",
+        "maxWidth": "string (use simple values)",
+        "overflow": "visible|hidden",
+        "position": "static|relative|absolute",
+        "top": "string (use simple values)",
+        "right": "string (use simple values)",
+        "bottom": "string (use simple values)",
+        "left": "string (use simple values)",
+        "zIndex": "number (use 0, 1, 2, 3 for simple layering)"
       }
     }
   ]
@@ -131,8 +181,8 @@ RESPOND WITH VALID JSON ONLY. No explanations or markdown formatting.`;
 
     return {
       model: 'groq', // Default to Groq for best performance
-      temperature: 0.7,
-      maxTokens: 2000,
+      temperature: 0.6, // Lower temperature for more consistent, detailed output
+      maxTokens: 4000, // Increased for more detailed wireframes
       systemPrompt: this.getSystemPrompt(),
       userPrompt
     };
@@ -160,8 +210,8 @@ Follow the same quality and structure as the examples. Respond with valid JSON o
 
     return {
       model: 'groq',
-      temperature: 0.6, // Lower temperature for more consistent output
-      maxTokens: 2500,
+      temperature: 0.5, // Lower temperature for more consistent, detailed output
+      maxTokens: 5000, // Increased for more detailed wireframes
       systemPrompt: this.getSystemPrompt(),
       userPrompt
     };
@@ -169,99 +219,171 @@ Follow the same quality and structure as the examples. Respond with valid JSON o
 
   // Get high-quality wireframe examples for few-shot learning
   private getWireframeExamples(): string {
-    return `EXAMPLE 1 - Modern SaaS Landing Page:
+    return `EXAMPLE 1 - Mobile App Wireframe (BookWorm Style):
 {
   "metadata": {
-    "title": "AI-Powered Analytics Dashboard",
-    "description": "Revolutionary analytics platform for modern businesses",
-    "pageType": "landing",
-    "device": "desktop",
+    "title": "BookWorm",
+    "description": "Discover Stories, Anytime, Anywhere",
+    "pageType": "app",
+    "device": "mobile",
     "complexity": "medium",
-    "theme": "modern",
+    "theme": "minimal",
     "colorScheme": "light"
   },
   "layout": {
     "type": "single-column",
-    "maxWidth": 1200,
+    "maxWidth": 375,
     "spacing": "normal",
-    "alignment": "center"
+    "alignment": "left"
   },
   "components": [
     {
-      "id": "header_main",
+      "id": "status_bar",
       "type": "header",
-      "position": { "x": 0, "y": 0, "width": 100, "height": 8, "zIndex": 100 },
-      "content": { "text": "AnalyticsAI" },
+      "position": { "x": 0, "y": 0, "width": 100, "height": 3, "zIndex": 100 },
+      "content": { "text": "9:41" },
       "styling": {
         "backgroundColor": "#ffffff",
-        "textColor": "#1f2937",
-        "padding": "1rem 2rem",
-        "display": "flex",
-        "justifyContent": "space-between",
-        "alignItems": "center",
-        "boxShadow": "0 1px 3px rgba(0,0,0,0.1)"
+        "textColor": "#000000",
+        "padding": "0.5rem",
+        "textAlign": "center",
+        "fontSize": "0.875rem",
+        "fontWeight": "normal"
       }
     },
     {
-      "id": "hero_section",
-      "type": "hero",
-      "position": { "x": 0, "y": 8, "width": 100, "height": 40, "zIndex": 10 },
-      "content": { 
-        "text": "Transform Your Data Into Actionable Insights",
-        "placeholder": "Advanced AI analytics for modern businesses"
-      },
+      "id": "logo_area",
+      "type": "image",
+      "position": { "x": 25, "y": 15, "width": 50, "height": 20, "zIndex": 10 },
+      "content": { "text": "Logo" },
       "styling": {
-        "backgroundColor": "#f8fafc",
-        "textColor": "#1f2937",
+        "backgroundColor": "#f0f0f0",
+        "textColor": "#666666",
+        "border": "1px solid #d0d0d0",
         "textAlign": "center",
-        "padding": "4rem 2rem",
-        "fontSize": "3rem",
+        "padding": "2rem",
+        "fontSize": "1rem",
+        "fontWeight": "normal"
+      }
+    },
+    {
+      "id": "app_title",
+      "type": "text",
+      "position": { "x": 0, "y": 40, "width": 100, "height": 5, "zIndex": 10 },
+      "content": { "text": "BookWorm" },
+      "styling": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#000000",
+        "textAlign": "center",
+        "fontSize": "1.5rem",
         "fontWeight": "bold"
+      }
+    },
+    {
+      "id": "tagline",
+      "type": "text",
+      "position": { "x": 0, "y": 47, "width": 100, "height": 5, "zIndex": 10 },
+      "content": { "text": "Discover Stories, Anytime, Anywhere" },
+      "styling": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#666666",
+        "textAlign": "center",
+        "fontSize": "1rem",
+        "fontWeight": "normal"
+      }
+    },
+    {
+      "id": "navigation",
+      "type": "navigation",
+      "position": { "x": 0, "y": 90, "width": 100, "height": 10, "zIndex": 20 },
+      "content": { "text": "Home | Browse | Cart | Profile" },
+      "styling": {
+        "backgroundColor": "#f0f0f0",
+        "textColor": "#000000",
+        "border": "1px solid #d0d0d0",
+        "textAlign": "center",
+        "padding": "1rem",
+        "fontSize": "0.875rem",
+        "fontWeight": "normal"
       }
     }
   ]
 }
 
-EXAMPLE 2 - E-commerce Product Page:
+EXAMPLE 2 - E-commerce Product Page Wireframe:
 {
   "metadata": {
-    "title": "Premium Wireless Headphones",
-    "description": "High-quality wireless headphones with noise cancellation",
+    "title": "Product Details",
+    "description": "Premium Wireless Headphones",
     "pageType": "ecommerce",
     "device": "desktop",
     "complexity": "medium",
-    "theme": "modern"
+    "theme": "minimal",
+    "colorScheme": "light"
   },
   "layout": {
     "type": "two-column",
     "maxWidth": 1200,
-    "spacing": "normal"
+    "spacing": "normal",
+    "alignment": "left"
   },
   "components": [
     {
+      "id": "header",
+      "type": "header",
+      "position": { "x": 0, "y": 0, "width": 100, "height": 8, "zIndex": 100 },
+      "content": { "text": "Logo | Navigation | Search | Cart" },
+      "styling": {
+        "backgroundColor": "#ffffff",
+        "textColor": "#000000",
+        "border": "1px solid #d0d0d0",
+        "padding": "1rem",
+        "fontSize": "1rem",
+        "fontWeight": "normal"
+      }
+    },
+    {
       "id": "product_image",
       "type": "image",
-      "position": { "x": 0, "y": 10, "width": 50, "height": 60, "zIndex": 10 },
-      "content": { "image": "product-hero.jpg" },
+      "position": { "x": 5, "y": 10, "width": 40, "height": 30, "zIndex": 10 },
+      "content": { "text": "Product Image" },
       "styling": {
-        "backgroundColor": "#f9fafb",
-        "borderRadius": "8px",
-        "padding": "2rem"
+        "backgroundColor": "#f0f0f0",
+        "textColor": "#666666",
+        "border": "1px solid #d0d0d0",
+        "textAlign": "center",
+        "padding": "2rem",
+        "fontSize": "1rem",
+        "fontWeight": "normal"
       }
     },
     {
       "id": "product_info",
-      "type": "card",
-      "position": { "x": 55, "y": 10, "width": 40, "height": 60, "zIndex": 10 },
-      "content": { 
-        "text": "Premium Wireless Headphones",
-        "placeholder": "Experience crystal clear audio with our latest noise-canceling technology"
-      },
+      "type": "text",
+      "position": { "x": 50, "y": 10, "width": 45, "height": 30, "zIndex": 10 },
+      "content": { "text": "Product Name\\nAuthor\\nPrice\\nDescription\\nReviews" },
       "styling": {
         "backgroundColor": "#ffffff",
-        "padding": "2rem",
-        "borderRadius": "8px",
-        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)"
+        "textColor": "#000000",
+        "border": "1px solid #d0d0d0",
+        "padding": "1rem",
+        "fontSize": "1rem",
+        "fontWeight": "normal"
+      }
+    },
+    {
+      "id": "add_to_cart",
+      "type": "button",
+      "position": { "x": 50, "y": 45, "width": 20, "height": 5, "zIndex": 20 },
+      "content": { "text": "Add to Cart" },
+      "styling": {
+        "backgroundColor": "#f0f0f0",
+        "textColor": "#000000",
+        "border": "1px solid #000000",
+        "textAlign": "center",
+        "padding": "1rem",
+        "fontSize": "1rem",
+        "fontWeight": "bold"
       }
     }
   ]

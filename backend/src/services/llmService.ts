@@ -35,8 +35,8 @@ export class LLMService {
         apiKey: process.env.GROQ_API_KEY,
         baseUrl: 'https://api.groq.com/openai/v1',
         model: 'llama-3.3-70b-versatile',
-        maxTokens: 4000,
-        temperature: 0.7
+        maxTokens: 5000, // Increased for more detailed wireframes
+        temperature: 0.6 // Lower temperature for more consistent output
       },
       {
         name: 'huggingface',
