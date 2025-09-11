@@ -8,6 +8,9 @@ export default function App() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 })
   const [isHoveringUI, setIsHoveringUI] = useState(false)
+  const [selectedComponent, setSelectedComponent] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragPreview, setDragPreview] = useState(null)
   const pageRef = useRef(null)
 
   // Intelligent page type detection
@@ -107,11 +110,201 @@ export default function App() {
 
   const handleMouseMove = (e) => {
     setMousePosition({ x: e.clientX, y: e.clientY })
+    
+    // Update drag position if dragging
+    if (isDragging && draggedComponent) {
+      const newX = e.clientX - dragOffset.x
+      const newY = e.clientY - dragOffset.y
+      // Update dragged component position for visual feedback
+    }
   }
 
   const handleMouseLeave = () => {
     // Reset to center when mouse leaves
     setMousePosition({ x: viewportSize.width / 2, y: viewportSize.height / 2 })
+  }
+
+  // Simple drag and drop handlers
+  const handleToolbarMouseDown = (e, componentType) => {
+    e.preventDefault()
+    console.log('Toolbar mouse down:', componentType)
+    
+    setIsDragging(true)
+    setDragPreview({
+      type: componentType,
+      x: e.clientX,
+      y: e.clientY
+    })
+    
+    const handleMouseMove = (e) => {
+      setDragPreview(prev => ({
+        ...prev,
+        x: e.clientX,
+        y: e.clientY
+      }))
+    }
+    
+    const handleMouseUp = (e) => {
+      const canvasRect = document.querySelector('[data-canvas]')?.getBoundingClientRect()
+      if (canvasRect) {
+        const x = e.clientX - canvasRect.left
+        const y = e.clientY - canvasRect.top
+        
+        // Check if dropped on canvas
+        if (x >= 0 && x <= canvasRect.width && y >= 0 && y <= canvasRect.height) {
+          createNewComponent(componentType, x, y, canvasRect)
+        }
+      }
+      
+      setIsDragging(false)
+      setDragPreview(null)
+      
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+  const handleComponentMouseDown = (e, componentId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Component mouse down:', componentId)
+    
+    setSelectedComponent(componentId)
+    
+    const startX = e.clientX
+    const startY = e.clientY
+    
+    const handleMouseMove = (e) => {
+      const deltaX = e.clientX - startX
+      const deltaY = e.clientY - startY
+      
+      const canvasRect = document.querySelector('[data-canvas]')?.getBoundingClientRect()
+      if (!canvasRect) return
+      
+      const xPercent = (deltaX / canvasRect.width) * 100
+      const yPercent = (deltaY / canvasRect.height) * 100
+      
+      setWireframe(prev => ({
+        ...prev,
+        components: prev.components.map(comp => 
+          comp.id === componentId 
+            ? {
+                ...comp,
+                x: Math.max(0, Math.min(85, comp.x + xPercent)),
+                y: Math.max(0, Math.min(85, comp.y + yPercent))
+              }
+            : comp
+        )
+      }))
+    }
+    
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+    
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+  }
+
+
+  const updateComponentPosition = (componentId, newX, newY, canvasRect) => {
+    const xPercent = (newX / canvasRect.width) * 100
+    const yPercent = (newY / canvasRect.height) * 100
+    
+    setWireframe(prev => ({
+      ...prev,
+      components: prev.components.map(comp => 
+        comp.id === componentId 
+          ? { ...comp, x: xPercent, y: yPercent }
+          : comp
+      )
+    }))
+  }
+
+  const createNewComponent = (componentType, x, y, canvasRect) => {
+    const xPercent = (x / canvasRect.width) * 100
+    const yPercent = (y / canvasRect.height) * 100
+    
+    const newComponent = {
+      id: `component-${Date.now()}`,
+      type: componentType,
+      x: xPercent,
+      y: yPercent,
+      width: getDefaultWidth(componentType),
+      height: getDefaultHeight(componentType),
+      content: getDefaultContent(componentType),
+      style: getDefaultStyle(componentType)
+    }
+    
+    setWireframe(prev => {
+      const currentWireframe = prev || { 
+        title: 'Custom Wireframe', 
+        components: [] 
+      }
+      return {
+        ...currentWireframe,
+        components: [...(currentWireframe.components || []), newComponent]
+      }
+    })
+  }
+
+  // Helper functions for component creation
+  const getDefaultWidth = (type) => {
+    const widthMap = {
+      'header': 100,
+      'button': 15,
+      'text': 30,
+      'image': 25,
+      'card': 35
+    }
+    return widthMap[type] || 20
+  }
+
+  const getDefaultHeight = (type) => {
+    const heightMap = {
+      'header': 8,
+      'button': 6,
+      'text': 8,
+      'image': 20,
+      'card': 25
+    }
+    return heightMap[type] || 10
+  }
+
+  const getDefaultContent = (type) => {
+    const contentMap = {
+      'header': 'Header',
+      'button': 'Button',
+      'text': 'Text Content',
+      'image': 'Image',
+      'card': 'Card Content'
+    }
+    return contentMap[type] || 'Component'
+  }
+
+  const getDefaultStyle = (type) => {
+    const styleMap = {
+      'header': { backgroundColor: '#f3f4f6', border: '1px solid #d1d5db' },
+      'button': { backgroundColor: '#3b82f6', color: 'white', borderRadius: '4px' },
+      'text': { backgroundColor: 'transparent', color: '#374151' },
+      'image': { backgroundColor: '#f9fafb', border: '2px dashed #d1d5db' },
+      'card': { backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '6px' }
+    }
+    return styleMap[type] || {}
+  }
+
+  // Component interaction handlers
+  const handleComponentClick = (e, componentId) => {
+    e.stopPropagation()
+    setSelectedComponent(componentId)
+  }
+
+  const handleCanvasClick = () => {
+    setSelectedComponent(null)
   }
 
   const updateViewportSize = () => {
@@ -585,17 +778,69 @@ export default function App() {
             // Professional wireframe canvas
             React.createElement('div', {
               key: 'wireframe-canvas',
+              'data-canvas': true,
+              onClick: handleCanvasClick,
               style: {
                 position: 'relative',
                 width: '100%',
                 height: '500px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #e5e7eb',
+                backgroundColor: isDragging ? '#f0f9ff' : '#ffffff',
+                border: isDragging ? '2px dashed #3b82f6' : '1px solid #e5e7eb',
                 borderRadius: '8px',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                cursor: isDragging ? 'copy' : 'default',
+                transition: 'all 0.2s ease'
               }
-            }, wireframe.components && wireframe.components.map((component, index) => {
+            }, [
+              // Drop zone indicator when dragging
+              isDragging && React.createElement('div', {
+                key: 'drop-indicator',
+                style: {
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  padding: '16px 24px',
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  border: '2px dashed #3b82f6',
+                  borderRadius: '8px',
+                  color: '#3b82f6',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  pointerEvents: 'none',
+                  zIndex: 10
+                }
+              }, `Drop ${dragPreview?.type} here`),
+
+              // Drag preview
+              dragPreview && React.createElement('div', {
+                key: 'drag-preview',
+                style: {
+                  position: 'fixed',
+                  left: `${dragPreview.x - 50}px`,
+                  top: `${dragPreview.y - 25}px`,
+                  width: '100px',
+                  height: '50px',
+                  backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                  border: '2px solid #3b82f6',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: '500',
+                  color: 'white',
+                  pointerEvents: 'none',
+                  zIndex: 9999,
+                  transform: 'rotate(2deg)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+                }
+              }, dragPreview.type),
+              
+              // Existing components
+              ...(wireframe.components ? wireframe.components.map((component, index) => {
               const renderComponent = () => {
+                const isSelected = selectedComponent === component.id
                 const baseStyle = {
                   position: 'absolute',
                   left: `${component.x}%`,
@@ -605,6 +850,9 @@ export default function App() {
                   cursor: 'move',
                   transition: 'all 0.2s ease',
                   boxSizing: 'border-box',
+                  border: isSelected ? '2px solid #3b82f6' : '1px solid transparent',
+                  outline: isSelected ? '1px solid #3b82f6' : 'none',
+                  outlineOffset: isSelected ? '2px' : '0',
                   ...(component.style || {})
                 }
 
@@ -612,6 +860,8 @@ export default function App() {
                 switch (component.type) {
                   case 'header':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: component.style?.backgroundColor || '#ffffff',
@@ -627,6 +877,8 @@ export default function App() {
 
                   case 'navbar':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         display: 'flex',
@@ -641,6 +893,8 @@ export default function App() {
 
                   case 'hero':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: component.style?.backgroundColor || '#f8fafc',
@@ -662,6 +916,8 @@ export default function App() {
 
                   case 'heading':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         fontSize: component.style?.fontSize || '24px',
@@ -676,6 +932,8 @@ export default function App() {
 
                   case 'paragraph':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         fontSize: '14px',
@@ -691,6 +949,8 @@ export default function App() {
 
                   case 'button':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: component.style?.backgroundColor || '#3b82f6',
@@ -708,6 +968,8 @@ export default function App() {
 
                   case 'card':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#ffffff',
@@ -731,6 +993,8 @@ export default function App() {
 
                   case 'sidebar':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#1f2937',
@@ -748,6 +1012,8 @@ export default function App() {
 
                   case 'stats':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#ffffff',
@@ -779,6 +1045,8 @@ export default function App() {
 
                   case 'chart':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#ffffff',
@@ -808,6 +1076,8 @@ export default function App() {
 
                   case 'table':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#ffffff',
@@ -838,6 +1108,8 @@ export default function App() {
 
                   case 'footer':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#1f2937',
@@ -851,6 +1123,8 @@ export default function App() {
 
                   case 'section':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: component.style?.backgroundColor || '#ffffff',
@@ -867,6 +1141,8 @@ export default function App() {
 
                   case 'search':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#f9fafb',
@@ -882,6 +1158,8 @@ export default function App() {
 
                   case 'filter':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#f9fafb',
@@ -902,6 +1180,8 @@ export default function App() {
 
                   case 'grid':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#ffffff',
@@ -931,6 +1211,8 @@ export default function App() {
 
                   case 'shopping-cart':
                     return React.createElement('div', {
+                      onMouseDown: (e) => handleComponentMouseDown(e, component.id),
+                      onClick: (e) => handleComponentClick(e, component.id),
                       style: {
                         ...baseStyle,
                         backgroundColor: '#3b82f6',
@@ -964,7 +1246,8 @@ export default function App() {
               }
 
               return renderComponent()
-            }))
+            }) : [])
+            ])
           ])
         ])
       ]),
@@ -1034,6 +1317,7 @@ export default function App() {
           // Header Component (Distinct icon)
           React.createElement('div', {
             key: 'header-tool',
+            onMouseDown: (e) => handleToolbarMouseDown(e, 'header'),
             style: {
               width: '36px',
               height: '36px',
@@ -1064,6 +1348,7 @@ export default function App() {
           // Button Component (Distinct icon)
           React.createElement('div', {
             key: 'button-tool',
+            onMouseDown: (e) => handleToolbarMouseDown(e, 'button'),
             style: {
               width: '36px',
               height: '36px',
@@ -1094,6 +1379,7 @@ export default function App() {
           // Text Component (T icon)
           React.createElement('div', {
             key: 'text-tool',
+            onMouseDown: (e) => handleToolbarMouseDown(e, 'text'),
             style: {
               width: '36px',
               height: '36px',
@@ -1124,6 +1410,7 @@ export default function App() {
           // Image Component (Mountain landscape)
           React.createElement('div', {
             key: 'image-tool',
+            onMouseDown: (e) => handleToolbarMouseDown(e, 'image'),
             style: {
               width: '36px',
               height: '36px',
@@ -1154,6 +1441,7 @@ export default function App() {
           // Card Component (Square with content)
           React.createElement('div', {
             key: 'card-tool',
+            onMouseDown: (e) => handleToolbarMouseDown(e, 'card'),
             style: {
               width: '36px',
               height: '36px',
@@ -1205,6 +1493,14 @@ export default function App() {
           // Clear Canvas Button
           React.createElement('div', {
             key: 'clear-canvas',
+            onClick: () => {
+              if (wireframe) {
+                setWireframe(prev => ({
+                  ...prev,
+                  components: []
+                }))
+              }
+            },
             style: {
               display: 'flex',
               alignItems: 'center',
@@ -1240,6 +1536,23 @@ export default function App() {
           // Save Wireframe Button
           React.createElement('div', {
             key: 'save-wireframe',
+            onClick: () => {
+              if (wireframe) {
+                const wireframeData = {
+                  title: wireframe.title,
+                  components: wireframe.components,
+                  timestamp: new Date().toISOString()
+                }
+                const dataStr = JSON.stringify(wireframeData, null, 2)
+                const dataBlob = new Blob([dataStr], { type: 'application/json' })
+                const url = URL.createObjectURL(dataBlob)
+                const link = document.createElement('a')
+                link.href = url
+                link.download = `wireframe-${Date.now()}.json`
+                link.click()
+                URL.revokeObjectURL(url)
+              }
+            },
             style: {
               display: 'flex',
               alignItems: 'center',
@@ -1275,4 +1588,4 @@ export default function App() {
       ])
     ])
   ])
-}
+} 
