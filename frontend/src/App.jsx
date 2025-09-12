@@ -540,26 +540,106 @@ export default function App() {
         onMouseEnter: () => setIsHoveringUI(true),
         onMouseLeave: () => setIsHoveringUI(false)
       }, [
+        React.createElement('div', {
+          key: 'branding-container',
+          style: {
+            textAlign: 'center',
+            marginBottom: '48px',
+            position: 'relative',
+            padding: '40px 20px',
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
+            borderRadius: '20px',
+            border: '1px solid rgba(102, 126, 234, 0.1)',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.1)',
+            backdropFilter: 'blur(10px)'
+          }
+      }, [
         React.createElement('h1', { 
           key: 'title',
           style: { 
-            fontSize: '64px', 
-            fontWeight: '700',
-            margin: '0 0 16px 0',
-            color: '#000000',
-            letterSpacing: '-0.025em'
+              fontSize: '72px',
+              fontWeight: '800',
+              margin: '0 0 8px 0',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              letterSpacing: '-0.05em',
+              lineHeight: '1.1',
+              textShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
           }
         }, 'RazorAI'),
         
         React.createElement('p', { 
           key: 'subtitle',
           style: { 
-            fontSize: '20px', 
-            color: '#6B7280',
-            margin: '0 0 48px 0',
-            fontWeight: '400'
-          }
-        }, 'Generate wireframes with AI')
+              fontSize: '24px', 
+              color: '#4B5563',
+              margin: '0 0 0 0',
+              fontWeight: '500',
+              letterSpacing: '-0.01em',
+              opacity: '0.9'
+            }
+          }, 'Generate wireframes with AI'),
+          
+          React.createElement('div', {
+            key: 'accent-line',
+            style: {
+              width: '100px',
+              height: '4px',
+              background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+              margin: '20px auto 0',
+              borderRadius: '2px',
+              boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
+            }
+          }),
+          
+          // Decorative floating elements
+          React.createElement('div', {
+            key: 'floating-dots',
+            style: {
+              position: 'absolute',
+              top: '20px',
+              right: '30px',
+              width: '8px',
+              height: '8px',
+              background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              borderRadius: '50%',
+              opacity: '0.6',
+              animation: 'float 3s ease-in-out infinite'
+            }
+          }),
+          
+          React.createElement('div', {
+            key: 'floating-dots-2',
+            style: {
+              position: 'absolute',
+              bottom: '30px',
+              left: '40px',
+              width: '6px',
+              height: '6px',
+              background: 'linear-gradient(45deg, #764ba2, #667eea)',
+              borderRadius: '50%',
+              opacity: '0.4',
+              animation: 'float 4s ease-in-out infinite reverse'
+            }
+          }),
+          
+          React.createElement('div', {
+            key: 'floating-dots-3',
+            style: {
+              position: 'absolute',
+              top: '50%',
+              right: '20px',
+              width: '4px',
+              height: '4px',
+              background: 'linear-gradient(45deg, #667eea, #764ba2)',
+              borderRadius: '50%',
+              opacity: '0.5',
+              animation: 'float 2.5s ease-in-out infinite'
+            }
+          })
+        ])
       ]),
       
       // Main content area
@@ -693,7 +773,7 @@ export default function App() {
                 e.currentTarget.style.backgroundColor = '#6b7280'
               }
             }
-                      }, isGenerating ? 'Generating...' : 'Search')
+                      }, isGenerating ? 'Generating...' : 'Generate')
           ])
         ]),
         
